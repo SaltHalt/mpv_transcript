@@ -4,6 +4,9 @@
 
 from python_mpv_jsonipc import MPV
 import os
+import pickle
+import srt
+
 mpv = MPV(start_mpv=False, ipc_socket=r"\\pipe\mpv_transcript_socket")
 print("Connection successful.")
 CACHE_DIR = r"C:\Programs\mpv\portable_config\transcript\cache"
@@ -11,11 +14,30 @@ CACHE_DIR = r"C:\Programs\mpv\portable_config\transcript\cache"
 FILE_DIR = os.path.join(mpv.working_directory,mpv.path)
 FILENAME = os.path.basename(FILE_DIR)
 
-print(CACHE_DIR, FILE_DIR, FILENAME)
-# os.system()
+def generateSRT(mp4_dir, srt_dir):
+    extract_subtitles = f"ffmpeg -i {mp4_dir} {srt_dir}"
+    os.system(extract_subtitles)
+    
+def generatePKL(srt_dir, pkl_dir):
+    reformat_sub = lambda sub : (str(sub.start).split('.')[0], sub.content)
+    subtitles = srt.parse(open(srt_dir, "r").read())
+    subtitle_list = list(map(reformat_sub, subtitles))
+    with open(pkl_dir, 'wb') as file:
+        pickle.dump(subtitle_list, file)
+
+SRT_DIR = os.path.join(CACHE_DIR, FILENAME.replace('.mp4', '.srt'))
+PKL_DIR = os.path.join(CACHE_DIR, FILENAME.replace('.mp4', '.pkl'))
+if not os.path.isfile(SRT_DIR): 
+    generateSRT(FILE_DIR, SRT_DIR)
+if not os.path.isfile(PKL_DIR):
+    generatePKL(SRT_DIR, PKL_DIR)
+with open(PKL_DIR, 'rb') as f:
+  subtitle_list = pickle.load(f)
+
+print("Loading complete")
+print(subtitle_list[20:24])
 
 # @mpv.on_key_press("R")
-# def init_transcript():
+# def update_transcript():
 #     pass
-
 
