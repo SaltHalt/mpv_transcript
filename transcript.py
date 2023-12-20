@@ -48,13 +48,14 @@ os.system(f'MODE {WIDTH},{HEIGHT}')
 os.system("COLOR F0")
 init()
 
-
-@mpv.on_key_press("R")
-def update_transcript():
-    os.system(f'MODE {WIDTH},{HEIGHT}')
+os.system(f'MODE {WIDTH},{HEIGHT}')
+import time
+while True:
+    time.sleep(0.3)
     n_subs = len(subtitle_list)
-    now = timedelta(seconds=mpv.time_pos)
-    i = bisect(subtitle_list, (now, ""))
+    #TODO There could be a bug where the highlighted subtitle is a bit later than the current sub in the video
+    now = timedelta(seconds=mpv.time_pos) 
+    i = bisect(subtitle_list, (now, "")) - 1
     n_subs_before = i
     n_subs_after = n_subs - i - 1
     output = ""
