@@ -1,4 +1,4 @@
-# mpv --input-ipc-server=\\pipe\mpv_transcript_socket filian.mp4
+# mpv --input-ipc-server=\\pipe\mpv_transcript_socket video.mp4
 # Shows all open pipes that contain 'mpv' in their name
 #[System.IO.Directory]::GetFiles("\\.\\pipe\\") | findstr "mpv"
 
@@ -6,6 +6,10 @@ from python_mpv_jsonipc import MPV
 import os
 import pickle
 import srt
+from datetime import timedelta
+from bisect import bisect
+from colorama import init
+from colored import stylize, fore, back
 
 mpv = MPV(start_mpv=False, ipc_socket=r"\\pipe\mpv_transcript_socket")
 print("Connection successful.")
@@ -17,9 +21,9 @@ FILENAME = os.path.basename(FILE_DIR)
 def generateSRT(mp4_dir, srt_dir):
     extract_subtitles = f"ffmpeg -i {mp4_dir} {srt_dir}"
     os.system(extract_subtitles)
-    
+
 def generatePKL(srt_dir, pkl_dir):
-    reformat_sub = lambda sub : (str(sub.start).split('.')[0], sub.content)
+    reformat_sub = lambda sub : (sub.start, sub.content)
     subtitles = srt.parse(open(srt_dir, "r").read())
     subtitle_list = list(map(reformat_sub, subtitles))
     with open(pkl_dir, 'wb') as file:
@@ -35,9 +39,41 @@ with open(PKL_DIR, 'rb') as f:
   subtitle_list = pickle.load(f)
 
 print("Loading complete")
-print(subtitle_list[20:24])
 
-# @mpv.on_key_press("R")
-# def update_transcript():
-#     pass
+WIDTH = 110
+HEIGHT = 25
+HALF = int((HEIGHT-1)/2)
+# CENTRE_POS = (HEIGHT+1)/2
+os.system(f'MODE {WIDTH},{HEIGHT}')
+os.system("COLOR F0")
+init()
 
+
+@mpv.on_key_press("R")
+def update_transcript():
+    os.system(f'MODE {WIDTH},{HEIGHT}')
+    n_subs = len(subtitle_list)
+    now = timedelta(seconds=mpv.time_pos)
+    i = bisect(subtitle_list, (now, ""))
+    n_subs_before = i
+    n_subs_after = n_subs - i - 1
+    output = ""
+    if(n_subs_before < HALF):
+        start = 0;
+        end = HEIGHT;
+    elif(n_subs_after < HALF):
+        start = n_subs-HEIGHT;
+        end = n_subs;
+    else:
+        start = i - HALF;
+        end = i + HALF + 1;
+    output = ""
+    for j in range(start, end):
+        timestamp = str(subtitle_list[j][0]).split('.')[0]
+        sub_text = subtitle_list[j][1]
+        line = f"{timestamp}| {sub_text}"
+        format_current = lambda text : stylize(text.ljust(WIDTH, " "), fore('grey_3')+back(254))
+        format_other = lambda text : stylize(text.ljust(WIDTH, " "), fore('grey_3')+back('white'))
+        format = format_current if j==i else format_other
+        output += format(line) + "\n"
+    print(output[:-1], end = "")
