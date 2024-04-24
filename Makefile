@@ -1,9 +1,5 @@
-all:
-	python -m PyInstaller -F transcript.py
-	move /y dist\transcript.exe transcript.exe
-	del /F /Q transcript.spec
-	rmdir /S /Q build
-	rmdir dist
+all: clean
+	python -m PyInstaller transcript.py
 
 clean:
-	del /F /Q transcript.exe
+	powershell -Command 'Remove-ItemSafely dist'

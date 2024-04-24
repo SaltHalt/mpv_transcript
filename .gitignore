@@ -1,1 +1,4 @@
 transcript.exe
+dist/*
+build/*
+transcript.spec
