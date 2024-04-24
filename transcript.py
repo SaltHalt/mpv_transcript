@@ -10,7 +10,7 @@ from datetime import timedelta
 from bisect import bisect
 from colorama import init
 from colored import stylize, fore, back
-
+#TODO: insert try-catch here
 mpv = MPV(start_mpv=False, ipc_socket=r"\\pipe\mpv_transcript_socket")
 print("Connection successful.")
 CACHE_DIR = r"C:\Programs\mpv\portable_config\transcript\cache"
@@ -18,9 +18,10 @@ CACHE_DIR = r"C:\Programs\mpv\portable_config\transcript\cache"
 FILE_DIR = os.path.join(mpv.working_directory,mpv.path)
 FILENAME = os.path.basename(FILE_DIR)
 
+ 
 def generateSRT(mp4_dir, srt_dir):
     extract_subtitles = f"ffmpeg -i {mp4_dir} {srt_dir}"
-    os.system(extract_subtitles)
+    os.system(extract_subtitles) #TODO: error detection by taking the exit code here
 
 def generatePKL(srt_dir, pkl_dir):
     reformat_sub = lambda sub : (sub.start, sub.content)
@@ -29,13 +30,13 @@ def generatePKL(srt_dir, pkl_dir):
     with open(pkl_dir, 'wb') as file:
         pickle.dump(subtitle_list, file)
 
-SRT_DIR = os.path.join(CACHE_DIR, FILENAME.replace('.mp4', '.srt'))
-PKL_DIR = os.path.join(CACHE_DIR, FILENAME.replace('.mp4', '.pkl'))
+SRT_DIR = os.path.join(CACHE_DIR, os.path.splitext(FILENAME)[0]+'.srt')
+PKL_DIR = os.path.join(CACHE_DIR, os.path.splitext(FILENAME)[0]+'.pkl')
 if not os.path.isfile(SRT_DIR): 
     generateSRT(FILE_DIR, SRT_DIR)
 if not os.path.isfile(PKL_DIR):
     generatePKL(SRT_DIR, PKL_DIR)
-with open(PKL_DIR, 'rb') as f:
+with open(PKL_DIR, 'rb') as f: #Consider doing try {f = open)} catch {} else{with f:}
   subtitle_list = pickle.load(f)
 
 print("Loading complete")
