@@ -8,3 +8,4 @@ You may find the ability to add flags on Windows shortcuts helpful.
 Then execute `transcript.py`. (Alternatively use the exe generated from the makefile)
 
 Note that the terminal dimensions are hardcoded.
+Also I think this will only work with video files that have .srt subtitles.
