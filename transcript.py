@@ -15,12 +15,12 @@ mpv = MPV(start_mpv=False, ipc_socket=r"\\pipe\mpv_transcript_socket")
 print("Connection successful.")
 CACHE_DIR = r"C:\Programs\mpv\portable_config\transcript\cache"
 
-FILE_DIR = os.path.join(mpv.working_directory,mpv.path)
+FILE_DIR = mpv.path #os.path.join(mpv.working_directory, mpv.path)
 FILENAME = os.path.basename(FILE_DIR)
 
  
 def generateSRT(mp4_dir, srt_dir):
-    extract_subtitles = f"ffmpeg -i {mp4_dir} {srt_dir}"
+    extract_subtitles = f"ffmpeg -i \"{mp4_dir}\" \"{srt_dir}\""
     os.system(extract_subtitles) #TODO: error detection by taking the exit code here
 
 def generatePKL(srt_dir, pkl_dir):
